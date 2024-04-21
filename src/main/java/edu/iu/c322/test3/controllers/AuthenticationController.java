@@ -1,6 +1,7 @@
 package edu.iu.c322.test3.controllers;
 
 import edu.iu.c322.test3.model.Customer;
+import edu.iu.c322.test3.repository.CustomerRepository;
 import edu.iu.c322.test3.service.IAuthenticationService;
 import edu.iu.c322.test3.service.TokenService;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,29 +19,26 @@ import java.io.IOException;
 @CrossOrigin
 public class AuthenticationController {
     private final AuthenticationManager authenticationManager;
-    private final IAuthenticationService authenticationService;
-
-    private TokenService tokenService;
-
+    private final TokenService tokenService;
+    private final CustomerRepository customerRepository;
 
     public AuthenticationController(AuthenticationManager authenticationManager,
-                                    IAuthenticationService authenticationService,
-                                    TokenService tokenService) {
+                                    TokenService tokenService,
+                                    CustomerRepository customerRepository) {
         this.authenticationManager = authenticationManager;
-        this.authenticationService = authenticationService;
         this.tokenService = tokenService;
+        this.customerRepository = customerRepository;
     }
 
 
     @PostMapping("/signup")
-    public boolean register(@RequestBody Customer customer) {
+    public void register(@RequestBody Customer customer) {
         try {
-            BCryptPasswordEncoder bc =new BCryptPasswordEncoder();
-            String passwordEncoded = bc.encode(customer.getPassword());
-            customer.setPassword(passwordEncoded);
-            authenticationService.register(customer);
-            return true;
-        } catch (IOException e) {
+            BCryptPasswordEncoder bc = new BCryptPasswordEncoder();
+            String passwordEncoder = bc.encode(customer.getPassword());
+            customer.setPassword(passwordEncoder);
+            customerRepository.save(customer);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -50,11 +48,9 @@ public class AuthenticationController {
         Authentication authentication = authenticationManager
                 .authenticate(
                         new UsernamePasswordAuthenticationToken(
-                                customer.getUsername()
-                                , customer.getPassword()));
+                                customer.getUsername(),
+                                customer.getPassword()));
 
         return tokenService.generateToken(authentication);
     }
-
-
 }

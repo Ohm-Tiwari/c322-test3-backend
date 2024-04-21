@@ -1,7 +1,7 @@
 package edu.iu.c322.test3.service;
 
 import edu.iu.c322.test3.model.Customer;
-import edu.iu.c322.test3.repository.AuthenticationFileRepository;
+import edu.iu.c322.test3.repository.CustomerRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -10,32 +10,32 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-
+//
 @Service
 public class AuthenticationService implements
         IAuthenticationService , UserDetailsService {
-    AuthenticationFileRepository authenticationFileRepository;
+    CustomerRepository customerRepository;
 
 
     public AuthenticationService(
-            AuthenticationFileRepository authenticationFileRepository) {
-        this.authenticationFileRepository = authenticationFileRepository;
+            CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
     }
 
     @Override
-    public Customer register(Customer customer) throws IOException {
+    public boolean register(Customer customer) throws IOException {
         BCryptPasswordEncoder bc = new BCryptPasswordEncoder();
         String passwordEncoded = bc.encode(customer.getPassword());
         customer.setPassword(passwordEncoded);
-        return authenticationFileRepository.save(customer);
+        return customerRepository.save(customer);
     }
 
     @Override
     public boolean login(String username, String password) throws IOException {
-        Customer customer = authenticationFileRepository.findByUsername(username);
+        Customer customer = customerRepository.findByUsername(username);
         if (customer != null) {
             BCryptPasswordEncoder bc = new BCryptPasswordEncoder();
-            if(bc.matches(password, customer.getPassword())) {
+            if (bc.matches(password, customer.getPassword())) {
                 return true;
             }
             return false;
@@ -43,14 +43,12 @@ public class AuthenticationService implements
         return false;
     }
 
-
-
     @Override
     public UserDetails loadUserByUsername(String username)
             throws UsernameNotFoundException {
         try {
             Customer customer =
-                    authenticationFileRepository.findByUsername(username);
+                    customerRepository.findByUsername(username);
             if(customer == null) {
                 throw new UsernameNotFoundException("");
             }

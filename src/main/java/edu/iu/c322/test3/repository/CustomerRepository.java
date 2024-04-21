@@ -3,6 +3,7 @@ package edu.iu.c322.test3.repository;
 import edu.iu.c322.test3.model.Customer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
@@ -13,7 +14,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
+
+
 
 @Repository
 public class CustomerRepository {
@@ -32,7 +36,6 @@ public class CustomerRepository {
             LOG.error(e.getMessage());
         }
     }
-
     public boolean save(Customer customer) throws IOException {
         Customer x = findByUsername(customer.getUsername());
         if(x == null) {
